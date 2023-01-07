@@ -5,6 +5,7 @@ import hashlib
 
 num_part = 5
 
+
 def setup():
     N = 16  # Set to 16 just for faster testing (in real scenario use 1028 or 2048)
     while True:
@@ -38,9 +39,16 @@ def hash_func(x, q):
     return num
 
 
+# Encryption of one participant
+def noisy_enc(param, ski, t, x_dot, q):
+    c = (param ^ x_dot) * hash_func(t, q) ^ ski
+    return c
+
+
 s = []
 generator, s, q = setup()
 print(f'Generator {generator}')
 print(f'Random secrets {s}')
 print(f'Prime number q {q}')
+noisy_enc(param=generator, ski=s[1], t=1500, x_dot=657, q=q)
 #hash_func(996, q)
