@@ -97,7 +97,7 @@ print(f'Generator {generator}')
 print(f'Random secrets {secrets}')
 print(f'Prime number q {q}')
 print(f'Prime number p {p}')
-print(f'Check {sum(secrets)%p}')
+print(f'Check {sum(secrets)%(p-1)}')
 print(f'Expected result {result}')
 
 prod = 1
