@@ -30,6 +30,24 @@ def setup():
             s = []
     return generator, s, q, p
 
+# Generate input for a specific timestamp
+# Returns a list that contains x_hat (noisy version of data) of the n participants
+def input_generator(p, n):
+    values = []
+    randoms = []
+    input = []
+    while True:
+        for i in range(n):
+            randoms.append(random.randrange(p))
+        if sum(randoms) % p == 0:
+            break
+        else:
+            randoms = []
+    for i in range(n):
+        data = random.randrange(p)
+        values.append(data)
+        input.append((data + randoms[i]) % p)
+    return input
 
 def hash_func(x, p, q):
     m = hashlib.sha256()
@@ -70,6 +88,8 @@ def bsgs(gen, h, p):
 
 secrets = []
 generator, secrets, q, p = setup()
+input = input_generator(p, num_part)
+print(f'Random input {input}')
 print(f'Generator {generator}')
 print(f'Random secrets {secrets}')
 print(f'Prime number q {q}')
