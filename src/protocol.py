@@ -78,7 +78,7 @@ def aggr_dec(param, sk0, t, c, q, p):
 def bsgs(gen, h, p):
     m = ceil(sqrt(p-1))
     precomp_pair = {pow(gen, i, p): i for i in range(m)}
-    print(f'V is {h} Table is {precomp_pair}')
+    #print(f'V is {h} Table is {precomp_pair}')
     c = pow(gen, m * (p-2), p)
     for j in range(m):
         y = (h * pow(c, j, p)) % p
@@ -98,7 +98,7 @@ print(f'Random secrets {secrets}')
 print(f'Prime number q {q}')
 print(f'Prime number p {p}')
 print(f'Check {sum(secrets)%(p-1)}')
-print(f'Expected result {result}')
+print(f'Expected result {result} or {result % p}')
 
 prod = 1
 for elem in secrets:
@@ -111,6 +111,6 @@ for i in range(num_part):
 #ciphertexts.append(noisy_enc(param=generator, ski=secrets[3], t=1500, data=500, q=q, p=p))
 print(f"Encrypted value {ciphertexts}")
 res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
-print(res)
+print(f'Result {res}')
 print(f'Check V value: {(generator**(sum(input)))%p == v_value}')
 #print(hash_func(996, p, q))
