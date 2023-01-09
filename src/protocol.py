@@ -4,7 +4,7 @@ from math import floor, ceil, sqrt
 import hashlib
 from functools import reduce
 
-num_part = 3
+num_part = 4
 
 
 def setup():
@@ -24,7 +24,7 @@ def setup():
             s.append(random.randrange(p))
         # print(f'Secret random {s}')
         # print(f'Is zero {sum(s) % p}   {p}')
-        if sum(s) % p == 0:
+        if sum(s) % (p-1) == 0:
             break
         else:
             s = []
@@ -38,16 +38,17 @@ def input_generator(p, n):
     input = []
     while True:
         for i in range(n):
-            randoms.append(random.randrange(p))
+            randoms.append(random.randrange(1, p))
         if sum(randoms) % p == 0:
             break
         else:
             randoms = []
     for i in range(n):
-        data = random.randrange(p)
+        data = random.randrange(1, p)
         values.append(data)
         input.append((data + randoms[i]) % p)
-    return input
+    print(f'Values: {values}')
+    return values, input
 
 def hash_func(x, p, q):
     m = hashlib.sha256()
@@ -55,13 +56,13 @@ def hash_func(x, p, q):
     res = m.hexdigest()
     num = int(res, base=16) % p
     #num = int(res, base=16)
-    num = (num ^ 2) % q
+    #num = (num ^ 2) % q
     return num
 
 
 # Encryption of one participant
 def noisy_enc(param, ski, t, data, q, p):
-    c = ((param ^ data) * hash_func(t, p, q) ^ ski) % p
+    c = ((param**data) * hash_func(t, p, q)**ski) % p
     return c
 
 
@@ -69,9 +70,9 @@ def aggr_dec(param, sk0, t, c, q, p):
     prod = 1
     for values in c:
         prod *= values
-    v = ((hash_func(t, p, q) ^ sk0) * prod) % p
+    v = ((hash_func(t, p, q)**sk0) * prod) % p
     decr_sum = bsgs(param, v, p)
-    return decr_sum
+    return decr_sum, v
 
 
 def bsgs(gen, h, p):
@@ -88,23 +89,28 @@ def bsgs(gen, h, p):
 
 secrets = []
 generator, secrets, q, p = setup()
-input = input_generator(p, num_part)
+#generator, secrets, q, p = 2, [1, 7, 2], 23, 11
+data, input = input_generator(p, num_part)
+result = sum(data)
 print(f'Random input {input}')
 print(f'Generator {generator}')
 print(f'Random secrets {secrets}')
 print(f'Prime number q {q}')
 print(f'Prime number p {p}')
 print(f'Check {sum(secrets)%p}')
+print(f'Expected result {result}')
 
 prod = 1
 for elem in secrets:
-    prod = (prod * (hash_func(8, p, q) ^ elem)) % p
-print(prod)
-#ciphertexts = []
-#ciphertexts.append(noisy_enc(param=generator, ski=secrets[1], t=1500, data=657, q=q, p=p))
-#ciphertexts.append(noisy_enc(param=generator, ski=secrets[2], t=1500, data=343, q=q, p=p))
+    prod = (prod * (hash_func(8, p, q)**elem)) % p
+print(f'Prod {prod}')
+ciphertexts = []
+for i in range(num_part):
+    ciphertexts.append(noisy_enc(param=generator, ski=secrets[i+1], t=1500, data=input[i], q=q, p=p))
+#ciphertexts.append(noisy_enc(param=generator, ski=secrets[2], t=1500, data=input[1], q=q, p=p))
 #ciphertexts.append(noisy_enc(param=generator, ski=secrets[3], t=1500, data=500, q=q, p=p))
-#print(f"Encrypted value {ciphertexts}")
-#res = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
-#print(res)
+print(f"Encrypted value {ciphertexts}")
+res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
+print(res)
+print(f'Check V value: {(generator**(sum(input)))%p == v_value}')
 #print(hash_func(996, p, q))
