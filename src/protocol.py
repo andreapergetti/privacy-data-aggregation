@@ -5,6 +5,7 @@ import hashlib
 from functools import reduce
 
 num_part = 4
+time_stamps = 5
 
 
 def setup():
@@ -39,7 +40,7 @@ def input_generator(p, n):
     while True:
         for i in range(n):
             randoms.append(random.randrange(1, p))
-        if sum(randoms) % p == 0:
+        if sum(randoms) % (2*p) == 0:
             break
         else:
             randoms = []
@@ -76,41 +77,45 @@ def aggr_dec(param, sk0, t, c, q, p):
 
 
 def bsgs(gen, h, p):
-    m = ceil(sqrt(p-1))
+    result = []
+    m = ceil(sqrt(p))
     precomp_pair = {pow(gen, i, p): i for i in range(m)}
     #print(f'V is {h} Table is {precomp_pair}')
     c = pow(gen, m * (p-2), p)
     for j in range(m):
         y = (h * pow(c, j, p)) % p
         if y in precomp_pair:
-            return j * m + precomp_pair[y]
+            result.append(j * m + precomp_pair[y])
+            #return j * m + precomp_pair[y]
+    return result
     return None
 
 
 secrets = []
 generator, secrets, q, p = setup()
-#generator, secrets, q, p = 2, [1, 7, 2], 23, 11
-data, input = input_generator(p, num_part)
-result = sum(data)
-print(f'Random input {input}')
 print(f'Generator {generator}')
 print(f'Random secrets {secrets}')
 print(f'Prime number q {q}')
 print(f'Prime number p {p}')
 print(f'Check {sum(secrets)%(p-1)}')
-print(f'Expected result {result} or {result % p}')
 
 prod = 1
 for elem in secrets:
     prod = (prod * (hash_func(8, p, q)**elem)) % p
 print(f'Prod {prod}')
-ciphertexts = []
-for i in range(num_part):
-    ciphertexts.append(noisy_enc(param=generator, ski=secrets[i+1], t=1500, data=input[i], q=q, p=p))
-#ciphertexts.append(noisy_enc(param=generator, ski=secrets[2], t=1500, data=input[1], q=q, p=p))
-#ciphertexts.append(noisy_enc(param=generator, ski=secrets[3], t=1500, data=500, q=q, p=p))
-print(f"Encrypted value {ciphertexts}")
-res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
-print(f'Result {res}')
-print(f'Check V value: {(generator**(sum(input)))%p == v_value}')
-#print(hash_func(996, p, q))
+
+# Create numbers for multiple timestamps
+for t in range(time_stamps):
+    data, input = input_generator(p, num_part)
+    result = sum(data)
+    print(f'Timestamp {t+1}: Random input {input}')
+    print(f'Timestamp {t+1}: Expected result {result} or {result % p}')
+
+    ciphertexts = []
+    for i in range(num_part):
+        ciphertexts.append(noisy_enc(param=generator, ski=secrets[i+1], t=1500, data=input[i], q=q, p=p))
+
+    print(f"Timestamp {t+1}: Encrypted value {ciphertexts}")
+    res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
+    print(f'Timestamp {t+1}: Check V value: {(generator**(sum(input)))%p == v_value}')
+    print(f'Timestamp {t+1}: Result {res}')
