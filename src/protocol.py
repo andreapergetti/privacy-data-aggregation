@@ -1,15 +1,15 @@
 from Crypto.Util import number
 from Crypto.Random import random
-from math import floor, ceil, sqrt
+from math import ceil, sqrt
 import hashlib
-from functools import reduce
 
 num_part = 4
-time_stamps = 5
+time_stamps = 1
 
-
+# Create the cyclic group, generator and the secret keys
+# Return the generator, secret keys and two prime number used to define the group
 def setup():
-    n = 16  # Set to 16 just for faster testing (in real scenario use 1028 or 2048)
+    n = 16  # Set to 16 just for faster testing (can be used higher values)
     while True:
         p = number.getPrime(N=n)
         # print(p)
@@ -17,15 +17,14 @@ def setup():
         # print(q)
         if number.isPrime(q):
             break
-    generator = ((random.randrange(floor(q/2) + 1)) ^ 2) % q
+    generator = (random.randrange(1, p+1)**2) % q
     # print(f'Generator: {generator}')
     s = []
     while True:
         for i in range(num_part+1):
             s.append(random.randrange(p))
         # print(f'Secret random {s}')
-        # print(f'Is zero {sum(s) % p}   {p}')
-        if sum(s) % (p-1) == 0:
+        if sum(s) % p == 0:
             break
         else:
             s = []
@@ -40,7 +39,7 @@ def input_generator(p, n):
     while True:
         for i in range(n):
             randoms.append(random.randrange(1, p))
-        if sum(randoms) % (2*p) == 0:
+        if sum(randoms) % p == 0:
             break
         else:
             randoms = []
@@ -51,39 +50,38 @@ def input_generator(p, n):
     print(f'Values: {values}')
     return values, input
 
-def hash_func(x, p, q):
+# Hash function that takes an integer as input and output an element of the cyclic group acting as random oracle
+def hash_func(x, p, q, gen):
     m = hashlib.sha256()
     m.update(b'{x}')
     res = m.hexdigest()
     num = int(res, base=16) % p
-    #num = int(res, base=16)
-    #num = (num ^ 2) % q
+    num = (gen**num) % q
     return num
 
-
-# Encryption of one participant
+# Encryption of one user's data
 def noisy_enc(param, ski, t, data, q, p):
-    c = ((param**data) * hash_func(t, p, q)**ski) % p
+    c = ((param**data) * (hash_func(t, p, q, param)**ski)) % q
     return c
 
-
+# Decryption function that takes all the users ciphertexts and output the decrypted sum of the randomized input
 def aggr_dec(param, sk0, t, c, q, p):
     prod = 1
     for values in c:
         prod *= values
-    v = ((hash_func(t, p, q)**sk0) * prod) % p
-    decr_sum = bsgs(param, v, p)
+    v = ((hash_func(t, p, q, param)**sk0) * prod) % q
+    decr_sum = bsgs(param, v, p, q)
     return decr_sum, v
 
-
-def bsgs(gen, h, p):
+# Implementation of the Baby step Giant step algorithm to solve discrete log problem
+# For discrete log equation V = g^(x) output the value of x
+def bsgs(gen, h, p, q):
     result = []
     m = ceil(sqrt(p))
-    precomp_pair = {pow(gen, i, p): i for i in range(m)}
-    #print(f'V is {h} Table is {precomp_pair}')
-    c = pow(gen, m * (p-2), p)
+    precomp_pair = {pow(gen, i, q): i for i in range(m)}
+    c = pow(gen, m * (q-2), q)
     for j in range(m):
-        y = (h * pow(c, j, p)) % p
+        y = (h * pow(c, j, q)) % q
         if y in precomp_pair:
             result.append(j * m + precomp_pair[y])
             #return j * m + precomp_pair[y]
@@ -97,11 +95,11 @@ print(f'Generator {generator}')
 print(f'Random secrets {secrets}')
 print(f'Prime number q {q}')
 print(f'Prime number p {p}')
-print(f'Check {sum(secrets)%(p-1)}')
+print(f'Check {sum(secrets)%p}')
 
 prod = 1
 for elem in secrets:
-    prod = (prod * (hash_func(8, p, q)**elem)) % p
+    prod = (prod * (hash_func(8, p, q, generator)**elem)) % q
 print(f'Prod {prod}')
 
 # Create numbers for multiple timestamps
@@ -117,5 +115,5 @@ for t in range(time_stamps):
 
     print(f"Timestamp {t+1}: Encrypted value {ciphertexts}")
     res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
-    print(f'Timestamp {t+1}: Check V value: {(generator**(sum(input)))%p == v_value}')
+    print(f'Timestamp {t+1}: Check V value: {(generator**(sum(input)))%q == v_value}')
     print(f'Timestamp {t+1}: Result {res}')
