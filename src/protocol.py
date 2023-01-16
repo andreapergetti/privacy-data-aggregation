@@ -3,7 +3,7 @@ from Crypto.Random import random
 from math import ceil, sqrt
 import hashlib
 
-num_part = 4
+num_part = 3
 time_stamps = 1
 
 # Create the cyclic group, generator and the secret keys
@@ -43,10 +43,15 @@ def input_generator(p, n):
             break
         else:
             randoms = []
+    while True:
+        for i in range(n):
+            values.append(random.randrange(1, p))
+        if sum(values) <= p:
+            break
+        else:
+            values = []
     for i in range(n):
-        data = random.randrange(1, p)
-        values.append(data)
-        input.append((data + randoms[i]) % p)
+        input.append((values[i] + randoms[i]) % p)
     print(f'Values: {values}')
     return values, input
 
@@ -83,9 +88,9 @@ def bsgs(gen, h, p, q):
     for j in range(m):
         y = (h * pow(c, j, q)) % q
         if y in precomp_pair:
-            result.append(j * m + precomp_pair[y])
-            #return j * m + precomp_pair[y]
-    return result
+            #result.append(j * m + precomp_pair[y])
+            return j * m + precomp_pair[y]
+    #return result
     return None
 
 
@@ -107,7 +112,7 @@ for t in range(time_stamps):
     data, input = input_generator(p, num_part)
     result = sum(data)
     print(f'Timestamp {t+1}: Random input {input}')
-    print(f'Timestamp {t+1}: Expected result {result} or {result % p}')
+    print(f'Timestamp {t+1}: Expected result {result}')
 
     ciphertexts = []
     for i in range(num_part):
