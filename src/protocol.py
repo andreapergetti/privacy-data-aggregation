@@ -94,31 +94,31 @@ def bsgs(gen, h, p, q):
     return None
 
 
-secrets = []
-generator, secrets, q, p = setup()
-print(f'Generator {generator}')
-print(f'Random secrets {secrets}')
-print(f'Prime number q {q}')
-print(f'Prime number p {p}')
-print(f'Check {sum(secrets)%p}')
-
-prod = 1
-for elem in secrets:
-    prod = (prod * (hash_func(8, p, q, generator)**elem)) % q
-print(f'Prod {prod}')
-
-# Create numbers for multiple timestamps
-for t in range(time_stamps):
-    data, input = input_generator(p, num_part)
-    result = sum(data)
-    print(f'Timestamp {t+1}: Random input {input}')
-    print(f'Timestamp {t+1}: Expected result {result}')
-
-    ciphertexts = []
-    for i in range(num_part):
-        ciphertexts.append(noisy_enc(param=generator, ski=secrets[i+1], t=1500, data=input[i], q=q, p=p))
-
-    print(f"Timestamp {t+1}: Encrypted value {ciphertexts}")
-    res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
-    print(f'Timestamp {t+1}: Check V value: {(generator**(sum(input)))%q == v_value}')
-    print(f'Timestamp {t+1}: Result {res}')
+#secrets = []
+#generator, secrets, q, p = setup()
+#print(f'Generator {generator}')
+#print(f'Random secrets {secrets}')
+#print(f'Prime number q {q}')
+#print(f'Prime number p {p}')
+#print(f'Check {sum(secrets)%p}')
+#
+#prod = 1
+#for elem in secrets:
+#    prod = (prod * (hash_func(8, p, q, generator)**elem)) % q
+#print(f'Prod {prod}')
+#
+## Create numbers for multiple timestamps
+#for t in range(time_stamps):
+#    data, input = input_generator(p, num_part)
+#    result = sum(data)
+#    print(f'Timestamp {t+1}: Random input {input}')
+#    print(f'Timestamp {t+1}: Expected result {result}')
+#
+#    ciphertexts = []
+#    for i in range(num_part):
+#        ciphertexts.append(noisy_enc(param=generator, ski=secrets[i+1], t=1500, data=input[i], q=q, p=p))
+#
+#    print(f"Timestamp {t+1}: Encrypted value {ciphertexts}")
+#    res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
+#    print(f'Timestamp {t+1}: Check V value: {(generator**(sum(input)))%q == v_value}')
+#    print(f'Timestamp {t+1}: Result {res}')
