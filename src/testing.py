@@ -34,6 +34,7 @@ class TestProtocol(unittest.TestCase):
                                     q=self.q, p=self.p)
             self.assertEqual(result, res)
 
+    # Check if p is a prime
     def test_p_prime(self):
         prime = False
         if self.p > 1:
@@ -45,6 +46,7 @@ class TestProtocol(unittest.TestCase):
                     prime = True
         self.assertEqual(prime, True)
 
+    # Check if q is a prime
     def test_q_prime(self):
         prime = False
         if self.q > 1:
