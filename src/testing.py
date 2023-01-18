@@ -58,6 +58,17 @@ class TestProtocol(unittest.TestCase):
                     prime = True
         self.assertEqual(prime, True)
 
+    # Check the discrete log 
+    def test_dlog(self):
+        for t in range(time_stamps):
+            data, input = input_generator(self.p, num_part)
+            ciphertexts = []
+            for i in range(num_part):
+                ciphertexts.append(noisy_enc(param=self.generator, ski=self.secrets[i+1], t=1500, data=input[i],
+                                             q=self.q, p=self.p))
+            res, v_value = aggr_dec(param=self.generator, sk0=self.secrets[0], t=1500, c=ciphertexts,
+                                    q=self.q, p=self.p)
+            self.assertEqual(v_value, pow(self.generator, sum(input), self.q))
 
 if __name__ == '__main__':
     unittest.main()
