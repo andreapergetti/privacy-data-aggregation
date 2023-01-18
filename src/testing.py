@@ -13,12 +13,16 @@ class TestProtocol(unittest.TestCase):
     # Check if the sum of the secret keys is 0 modulo p
     def test_sk(self):
         self.assertEqual(0, sum(self.secrets) % self.p)
-
-    # Check if the result obtained is equal to the expected result
-    def test_result(self):
+    
+     # Check if the product of the hashes raised to the secret keys is 1
+    def test_product(self):
         prod = 1
         for elem in self.secrets:
             prod = (prod * (hash_func(8, self.p, self.q, self.generator)**elem)) % self.q
+        self.assertEqual(1, prod)
+
+    # Check if the result obtained is equal to the expected result
+    def test_result(self):
         for t in range(time_stamps):
             data, input = input_generator(self.p, num_part)
             result = sum(data)
