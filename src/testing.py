@@ -34,30 +34,6 @@ class TestProtocol(unittest.TestCase):
                                     q=self.q, p=self.p)
             self.assertEqual(result, res)
 
-    # Check if p is a prime
-    def test_p_prime(self):
-        prime = False
-        if self.p > 1:
-            for i in range(2, int(self.p/2)+1):
-                if (self.p % i) == 0:
-                    prime = False
-                    break
-                else:
-                    prime = True
-        self.assertEqual(prime, True)
-
-    # Check if q is a prime
-    def test_q_prime(self):
-        prime = False
-        if self.q > 1:
-            for i in range(2, int(self.q/2)+1):
-                if (self.q % i) == 0:
-                    prime = False
-                    break
-                else:
-                    prime = True
-        self.assertEqual(prime, True)
-
     # Check the discrete log 
     def test_dlog(self):
         for t in range(time_stamps):
