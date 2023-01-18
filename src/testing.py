@@ -32,7 +32,29 @@ class TestProtocol(unittest.TestCase):
                                              q=self.q, p=self.p))
             res, v_value = aggr_dec(param=self.generator, sk0=self.secrets[0], t=1500, c=ciphertexts,
                                     q=self.q, p=self.p)
-            self.assertEqual(sum(data), res)
+            self.assertEqual(result, res)
+
+    def test_p_prime(self):
+        prime = False
+        if self.p > 1:
+            for i in range(2, int(self.p/2)+1):
+                if (self.p % i) == 0:
+                    prime = False
+                    break
+                else:
+                    prime = True
+        self.assertEqual(prime, True)
+
+    def test_q_prime(self):
+        prime = False
+        if self.q > 1:
+            for i in range(2, int(self.q/2)+1):
+                if (self.q % i) == 0:
+                    prime = False
+                    break
+                else:
+                    prime = True
+        self.assertEqual(prime, True)
 
 
 if __name__ == '__main__':
