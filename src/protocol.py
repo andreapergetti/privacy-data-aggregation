@@ -52,7 +52,7 @@ def input_generator(p, n):
             values = []
     for i in range(n):
         input.append((values[i] + randoms[i]) % p)
-    print(f'Values: {values}')
+    #print(f'Values: {values}')
     return values, input
 
 # Hash function that takes an integer as input and output an element of the cyclic group acting as random oracle
