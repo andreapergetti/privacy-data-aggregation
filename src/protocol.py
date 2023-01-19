@@ -4,7 +4,7 @@ from math import ceil, sqrt
 import hashlib
 
 num_part = 3
-time_stamps = 1
+time_stamps = 3
 
 # Create the cyclic group, generator and the secret keys
 # Return the generator, secret keys and two prime number used to define the group
@@ -12,18 +12,14 @@ def setup():
     n = 16  # Set to 16 just for faster testing (can be used higher values)
     while True:
         p = number.getPrime(N=n)
-        # print(p)
         q = 2*p+1
-        # print(q)
         if number.isPrime(q):
             break
     generator = (random.randrange(1, p+1)**2) % q
-    # print(f'Generator: {generator}')
     s = []
     while True:
         for i in range(num_part+1):
             s.append(random.randrange(p))
-        # print(f'Secret random {s}')
         if sum(s) % p == 0:
             break
         else:
@@ -52,7 +48,6 @@ def input_generator(p, n):
             values = []
     for i in range(n):
         input.append((values[i] + randoms[i]) % p)
-    #print(f'Values: {values}')
     return values, input
 
 # Hash function that takes an integer as input and output an element of the cyclic group acting as random oracle
@@ -81,44 +76,42 @@ def aggr_dec(param, sk0, t, c, q, p):
 # Implementation of the Baby step Giant step algorithm to solve discrete log problem
 # For discrete log equation V = g^(x) output the value of x
 def bsgs(gen, h, p, q):
-    result = []
     m = ceil(sqrt(p))
     precomp_pair = {pow(gen, i, q): i for i in range(m)}
     c = pow(gen, m * (q-2), q)
     for j in range(m):
         y = (h * pow(c, j, q)) % q
         if y in precomp_pair:
-            #result.append(j * m + precomp_pair[y])
             return j * m + precomp_pair[y]
-    #return result
     return None
 
 
-#secrets = []
-#generator, secrets, q, p = setup()
-#print(f'Generator {generator}')
-#print(f'Random secrets {secrets}')
-#print(f'Prime number q {q}')
-#print(f'Prime number p {p}')
-#print(f'Check {sum(secrets)%p}')
-#
-#prod = 1
-#for elem in secrets:
-#    prod = (prod * (hash_func(8, p, q, generator)**elem)) % q
-#print(f'Prod {prod}')
-#
-## Create numbers for multiple timestamps
-#for t in range(time_stamps):
-#    data, input = input_generator(p, num_part)
-#    result = sum(data)
-#    print(f'Timestamp {t+1}: Random input {input}')
-#    print(f'Timestamp {t+1}: Expected result {result}')
-#
-#    ciphertexts = []
-#    for i in range(num_part):
-#        ciphertexts.append(noisy_enc(param=generator, ski=secrets[i+1], t=1500, data=input[i], q=q, p=p))
-#
-#    print(f"Timestamp {t+1}: Encrypted value {ciphertexts}")
-#    res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
-#    print(f'Timestamp {t+1}: Check V value: {(generator**(sum(input)))%q == v_value}')
-#    print(f'Timestamp {t+1}: Result {res}')
+secrets = []
+generator, secrets, q, p = setup()
+print(f'Generator {generator}')
+print(f'Random secrets {secrets}')
+print(f'Prime number q {q}')
+print(f'Prime number p {p}')
+print(f'Check {sum(secrets)%p}')
+
+prod = 1
+for elem in secrets:
+    prod = (prod * (hash_func(8, p, q, generator)**elem)) % q
+print(f'Prod {prod}')
+
+# Create numbers for multiple timestamps
+for t in range(time_stamps):
+    data, input = input_generator(p, num_part)
+    result = sum(data)
+    print(f'Timestamp {t+1}: Initial input {data}')
+    print(f'Timestamp {t+1}: Random input {input}')
+    print(f'Timestamp {t+1}: Expected result {result}')
+
+    ciphertexts = []
+    for i in range(num_part):
+        ciphertexts.append(noisy_enc(param=generator, ski=secrets[i+1], t=1500, data=input[i], q=q, p=p))
+
+    print(f"Timestamp {t+1}: Encrypted value {ciphertexts}")
+    res, v_value = aggr_dec(param=generator, sk0=secrets[0], t=1500, c=ciphertexts, q=q, p=p)
+    print(f'Timestamp {t+1}: Check V value: {(generator**(sum(input)))%q == v_value}')
+    print(f'Timestamp {t+1}: Result {res}')
